@@ -1,27 +1,14 @@
 import './App.css'
 import { useEffect, useMemo, useState } from 'react'
-
-type TimeOffType = 'VACATION' | 'SICK' | 'UNPAID' | 'OTHER'
-
-interface Division {
-  id: string
-  name: string
-}
-
-interface Employee {
-  id: string
-  fullName: string
-  divisionId?: string
-}
-
-interface TimeOffEvent {
-  id: string
-  employeeId: string
-  divisionId?: string
-  type: TimeOffType
-  startDate: string
-  endDate: string
-}
+import Dashboard from './components/Dashboard'
+import {
+  calculateEmployeeStats,
+  calculateDivisionStats,
+  calculateTypeBreakdown,
+  findBusiestDays,
+  findCoverageGaps,
+} from './utils/statistics'
+import type { Employee, Division, TimeOffEvent, TimeOffType } from './types'
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:4000'
 const DEFAULT_TENANT = import.meta.env.VITE_TENANT_ID ?? 'acme'
@@ -38,6 +25,7 @@ function App() {
   const [dateTo, setDateTo] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'calendar' | 'dashboard'>('calendar')
 
   useEffect(() => {
     const controller = new AbortController()
@@ -161,8 +149,88 @@ function App() {
     (selectedType !== 'all' ? 1 : 0) +
     (dateFrom || dateTo ? 1 : 0)
 
+  // Calculate statistics
+  const employeeStats = useMemo(
+    () => calculateEmployeeStats(employees, events),
+    [employees, events]
+  )
+
+  const divisionStats = useMemo(
+    () => calculateDivisionStats(divisions, employees, employeeStats),
+    [divisions, employees, employeeStats]
+  )
+
+  const typeBreakdown = useMemo(
+    () => calculateTypeBreakdown(events),
+    [events]
+  )
+
+  const busiestDays = useMemo(
+    () => findBusiestDays(events, 10),
+    [events]
+  )
+
+  const coverageGaps = useMemo(
+    () => findCoverageGaps(events, employees, 0.3),
+    [events, employees]
+  )
+
   return (
-    <div cldiv className="sidebar-header">
+    <div className="app">
+      <header className="app-header">
+        <div>
+          <h1>Vacation Tracker</h1>
+          <p>Multi-tenant PTO calendar powered by Viewpoint (or other systems).</p>
+        </div>
+        <div className="header-controls">
+          <div className="view-toggle">
+            <button
+              className={viewMode === 'calendar' ? 'active' : ''}
+              onClick={() => setViewMode('calendar')}
+            >
+              📅 Calendar
+            </button>
+            <button
+              className={viewMode === 'dashboard' ? 'active' : ''}
+              onClick={() => setViewMode('dashboard')}
+            >
+              📊 Dashboard
+            </button>
+          </div>
+          <div className="tenant-input">
+            <label>
+              Tenant ID
+              <input
+                value={tenantId}
+                onChange={(e) => setTenantId(e.target.value)}
+                placeholder="acme"
+              />
+            </label>
+          </div>
+        </div>
+      </header>
+
+      {viewMode === 'dashboard' ? (
+        <div className="dashboard-view">
+          {loading && <div className="status">Loading…</div>}
+          {error && <div className="status error">{error}</div>}
+          {!loading && !error && (
+            <Dashboard
+              employeeStats={employeeStats}
+              divisionStats={divisionStats}
+              busiestDays={busiestDays}
+              coverageGaps={coverageGaps}
+              typeBreakdown={typeBreakdown}
+              totalEvents={events.length}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+            />
+          )}
+        </div>
+      ) : (
+        <main className="app-main">
+          <aside className="sidebar">
+            <div className="sidebar-header">
             <h2>
               Filters
               {activeFilterCount > 0 && (
@@ -357,7 +425,8 @@ function App() {
             )}
           </div>
         </section>
-      </main>
+        </main>
+      )}
     </div>
   )
 }

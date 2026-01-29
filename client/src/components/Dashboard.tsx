@@ -1,0 +1,215 @@
+import type { EmployeeStats, DivisionStats, DayStats, TypeBreakdown } from '../utils/statistics'
+
+interface DashboardProps {
+  employeeStats: EmployeeStats[]
+  divisionStats: DivisionStats[]
+  busiestDays: DayStats[]
+  coverageGaps: DayStats[]
+  typeBreakdown: TypeBreakdown
+  totalEvents: number
+  dateFrom?: string
+  dateTo?: string
+}
+
+export default function Dashboard({
+  employeeStats,
+  divisionStats,
+  busiestDays,
+  coverageGaps,
+  typeBreakdown,
+  totalEvents,
+  dateFrom,
+  dateTo,
+}: DashboardProps) {
+  const totalDays = Object.values(typeBreakdown).reduce((a, b) => a + b, 0)
+  const avgDaysPerEmployee =
+    employeeStats.length > 0
+      ? (totalDays / employeeStats.length).toFixed(1)
+      : '0'
+
+  const maxTypeValue = Math.max(...Object.values(typeBreakdown))
+
+  return (
+    <div className="dashboard">
+      <div className="dashboard-header">
+        <h2>📊 Statistics Dashboard</h2>
+        {(dateFrom || dateTo) && (
+          <div className="date-range-display">
+            {dateFrom || '...'} to {dateTo || '...'}
+          </div>
+        )}
+      </div>
+
+      {/* Summary Cards */}
+      <div className="metric-cards">
+        <div className="metric-card">
+          <div className="metric-value">{totalEvents}</div>
+          <div className="metric-label">Total Events</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-value">{totalDays}</div>
+          <div className="metric-label">Total Days Off</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-value">{avgDaysPerEmployee}</div>
+          <div className="metric-label">Avg Days/Employee</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-value">{employeeStats.length}</div>
+          <div className="metric-label">Employees</div>
+        </div>
+      </div>
+
+      <div className="dashboard-grid">
+        {/* Time Off Type Breakdown */}
+        <div className="dashboard-section">
+          <h3>Time Off by Type</h3>
+          <div className="chart-container">
+            <div className="bar-chart">
+              <div className="bar-item">
+                <div className="bar-label">Vacation</div>
+                <div className="bar-track">
+                  <div
+                    className="bar-fill bar-vacation"
+                    style={{
+                      width: `${(typeBreakdown.vacation / maxTypeValue) * 100}%`,
+                    }}
+                  />
+                </div>
+                <div className="bar-value">{typeBreakdown.vacation} days</div>
+              </div>
+              <div className="bar-item">
+                <div className="bar-label">Sick</div>
+                <div className="bar-track">
+                  <div
+                    className="bar-fill bar-sick"
+                    style={{
+                      width: `${(typeBreakdown.sick / maxTypeValue) * 100}%`,
+                    }}
+                  />
+                </div>
+                <div className="bar-value">{typeBreakdown.sick} days</div>
+              </div>
+              <div className="bar-item">
+                <div className="bar-label">Unpaid</div>
+                <div className="bar-track">
+                  <div
+                    className="bar-fill bar-unpaid"
+                    style={{
+                      width: `${(typeBreakdown.unpaid / maxTypeValue) * 100}%`,
+                    }}
+                  />
+                </div>
+                <div className="bar-value">{typeBreakdown.unpaid} days</div>
+              </div>
+              <div className="bar-item">
+                <div className="bar-label">Other</div>
+                <div className="bar-track">
+                  <div
+                    className="bar-fill bar-other"
+                    style={{
+                      width: `${(typeBreakdown.other / maxTypeValue) * 100}%`,
+                    }}
+                  />
+                </div>
+                <div className="bar-value">{typeBreakdown.other} days</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Top Employees */}
+        <div className="dashboard-section">
+          <h3>Top 10 Employees by Days Off</h3>
+          <div className="leaderboard">
+            {employeeStats.slice(0, 10).map((stat, idx) => (
+              <div key={stat.employeeId} className="leaderboard-item">
+                <div className="leaderboard-rank">#{idx + 1}</div>
+                <div className="leaderboard-name">{stat.employeeName}</div>
+                <div className="leaderboard-value">{stat.totalDays} days</div>
+              </div>
+            ))}
+            {employeeStats.length === 0 && (
+              <div className="empty-state">No employee data available</div>
+            )}
+          </div>
+        </div>
+
+        {/* Division Breakdown */}
+        <div className="dashboard-section">
+          <h3>Division Averages</h3>
+          <div className="division-stats">
+            {divisionStats.map((stat) => (
+              <div key={stat.divisionId} className="division-stat-item">
+                <div className="division-stat-header">
+                  <span className="division-stat-name">{stat.divisionName}</span>
+                  <span className="division-stat-count">
+                    {stat.employeeCount} emp
+                  </span>
+                </div>
+                <div className="division-stat-bar">
+                  <div
+                    className="division-stat-fill"
+                    style={{
+                      width: `${Math.min(
+                        (stat.averageDaysPerEmployee / 20) * 100,
+                        100
+                      )}%`,
+                    }}
+                  />
+                </div>
+                <div className="division-stat-value">
+                  {stat.averageDaysPerEmployee.toFixed(1)} days/emp
+                </div>
+              </div>
+            ))}
+            {divisionStats.length === 0 && (
+              <div className="empty-state">No division data available</div>
+            )}
+          </div>
+        </div>
+
+        {/* Busiest Days */}
+        <div className="dashboard-section">
+          <h3>🔥 Busiest Days</h3>
+          <div className="busy-days-list">
+            {busiestDays.slice(0, 8).map((day) => (
+              <div key={day.date} className="busy-day-item">
+                <div className="busy-day-date">{day.date}</div>
+                <div className="busy-day-bar">
+                  <div
+                    className="busy-day-fill"
+                    style={{
+                      width: `${(day.count / busiestDays[0]?.count || 1) * 100}%`,
+                    }}
+                  />
+                </div>
+                <div className="busy-day-count">{day.count} people</div>
+              </div>
+            ))}
+            {busiestDays.length === 0 && (
+              <div className="empty-state">No busy days found</div>
+            )}
+          </div>
+        </div>
+
+        {/* Coverage Gaps */}
+        {coverageGaps.length > 0 && (
+          <div className="dashboard-section coverage-gaps">
+            <h3>⚠️ Coverage Alerts (30%+ of team)</h3>
+            <div className="coverage-list">
+              {coverageGaps.slice(0, 8).map((gap) => (
+                <div key={gap.date} className="coverage-item">
+                  <div className="coverage-date">{gap.date}</div>
+                  <div className="coverage-count">
+                    {gap.count} people ({((gap.count / employeeStats.length) * 100).toFixed(0)}%)
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
