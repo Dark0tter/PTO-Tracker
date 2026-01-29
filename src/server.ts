@@ -121,7 +121,7 @@ app.use((err: any, req: any, res: any, next: any) => {
 const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
-  console.log(`Vacation Tracker API listening on port ${PORT}`);
+  console.log(`PTO Tracker API listening on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`Authentication: Enabled`);
   console.log(`Health check: http://localhost:${PORT}/health`);

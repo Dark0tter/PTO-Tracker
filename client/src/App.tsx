@@ -221,7 +221,7 @@ function App() {
     <div className="app">
       <header className="app-header">
         <div>
-          <h1>Vacation Tracker</h1>
+          <h1>PTO Tracker</h1>
           <p>Multi-tenant PTO calendar - Logged in as <strong>{currentUser.username}</strong> ({currentUser.tenantId})</p>
         </div>
         <div className="header-controls">

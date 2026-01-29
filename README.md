@@ -385,7 +385,7 @@ For issues or questions, please open an issue on GitHub.
 **Made with ❤️ for better vacation planning**
  (multi-tenant)
 
-This is the backend API for a marketable vacation tracker. It is **multi-tenant**: each company (“tenant”) provides its own connector configuration (e.g., Viewpoint For Projects).
+This is the backend API for a marketable PTO tracker. It is **multi-tenant**: each company ("tenant") provides its own connector configuration (e.g., Viewpoint For Projects).
 
 ### What you need to do
 

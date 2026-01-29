@@ -188,4 +188,4 @@ Simply add new entries to `tenants.json`:
 
 ---
 
-**Ready to go!** The mock connector is fully operational and you can now develop your vacation tracker independently of the Trimble API. 🚀
+**Ready to go!** The mock connector is fully operational and you can now develop your PTO tracker independently of the Trimble API. 🚀

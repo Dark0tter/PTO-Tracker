@@ -141,7 +141,7 @@ Authorization: Bearer eyJ...
 4. **Try logging in:**
    - Username: `demo`
    - Password: `demo123`
-5. **Should see** vacation tracker with demo tenant data (25 employees)
+5. **Should see** PTO tracker with demo tenant data (25 employees)
 6. **Click logout** button
 7. **Try another user:**
    - Username: `test`

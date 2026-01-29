@@ -195,4 +195,4 @@ The filtering system is ready to use! To test:
 
 ---
 
-**Status**: ✅ Complete and ready to use! The Vacation Tracker now has professional-grade filtering capabilities.
+**Status**: ✅ Complete and ready to use! The PTO Tracker now has professional-grade filtering capabilities.

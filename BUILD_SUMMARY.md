@@ -250,7 +250,7 @@ While the app is feature-complete, potential additions:
 d2e6fa6 - Add backend improvements, Docker setup, and comprehensive documentation
 082a14a - Add calendar grid view with month navigation and visual event display
 5d04aae - Add statistics dashboard with metrics, charts, and insights
-6aced6d - Initial commit: Vacation Tracker with mock data connector and advanced filtering
+6aced6d - Initial commit: PTO Tracker with mock data connector and advanced filtering
 ```
 
 ---

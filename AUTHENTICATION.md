@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Vacation Tracker now includes JWT-based authentication to secure access to the application. Users must log in with valid credentials to access the vacation data.
+The PTO Tracker now includes JWT-based authentication to secure access to the application. Users must log in with valid credentials to access the vacation data.
 
 ## Features
 
