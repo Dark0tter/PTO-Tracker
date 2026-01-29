@@ -6,6 +6,13 @@ export type Employee = {
   externalRef?: string
 }
 
+export type User = {
+  id: string
+  username: string
+  tenantId: string
+  role: string
+}
+
 export type Division = {
   id: string
   name: string

@@ -8,7 +8,14 @@ A modern, multi-tenant vacation/time-off tracking application with powerful anal
 
 ## ✨ Features
 
-### 📊 **Multiple View Modes**
+### � **Authentication & Security**
+- JWT-based authentication
+- Role-based access control (Admin/User)
+- Secure password hashing
+- Persistent login sessions
+- Multi-tenant user isolation
+
+### �📊 **Multiple View Modes**
 - **List View** - Chronological list of time-off events with advanced filtering
 - **Calendar Grid** - Visual monthly calendar with event overlays
 - **Statistics Dashboard** - Analytics, metrics, and insights
@@ -102,14 +109,20 @@ A modern, multi-tenant vacation/time-off tracking application with powerful anal
 
 3. **Open your browser** to http://localhost:5173
 
+4. **Log in** with demo credentials:
+   - Username: `demo` / Password: `demo123` (Demo tenant)
+   - Username: `admin` / Password: `admin123` (ACME tenant)
+   - Username: `test` / Password: `test123` (Test tenant)
+
+See [AUTHENTICATION.md](./AUTHENTICATION.md) for complete authentication documentation.
+
 ### Using Mock Data
 
-The app comes pre-configured with two mock tenants:
+The app comes pre-configured with mock tenants. Each user is automatically logged into their assigned tenant:
 
-- **demo** - 25 employees, 5 divisions, 50 events
-- **testco** - 100 employees, 10 divisions, 200 events
-
-Change the "Tenant ID" in the header to `demo` or `testco` to see mock data!
+- **demo** user → Demo tenant (25 employees, 5 divisions, 50 events)
+- **test** user → Test tenant (100 employees, 10 divisions, 200 events)
+- **admin** user → ACME tenant (Viewpoint integration)
 
 ## 📖 API Documentation
 

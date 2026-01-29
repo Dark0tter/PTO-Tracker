@@ -14,6 +14,7 @@ interface CalendarGridProps {
   employees: Employee[]
   onMonthChange: (year: number, month: number) => void
   onEventClick?: (event: TimeOffEvent) => void
+  maxOverlap?: number
 }
 
 export default function CalendarGrid({
@@ -23,6 +24,7 @@ export default function CalendarGrid({
   employees,
   onMonthChange,
   onEventClick,
+  maxOverlap = 3,
 }: CalendarGridProps) {
   const calendar = useMemo(
     () => generateCalendarMonth(year, month, events),
@@ -99,11 +101,16 @@ export default function CalendarGrid({
                     !day.isCurrentMonth ? 'calendar-day-other-month' : ''
                   } ${day.isToday ? 'calendar-day-today' : ''} ${
                     day.events.length > 0 ? 'calendar-day-has-events' : ''
-                  }`}
+                  } ${day.events.length > maxOverlap ? 'calendar-day-conflict' : ''}`}
                 >
-                  <div className="calendar-day-number">{day.date.getDate()}</div>
+                  <div className="calendar-day-number">
+                    {day.date.getDate()}
+                    {day.events.length > 1 && (
+                      <span className="calendar-day-count">{day.events.length}</span>
+                    )}
+                  </div>
                   <div className="calendar-day-events">
-                    {day.events.slice(0, 3).map((event) => (
+                    {day.events.map((event) => (
                       <div
                         key={event.id}
                         className={`calendar-event calendar-event-${event.type.toLowerCase()}`}
@@ -115,11 +122,6 @@ export default function CalendarGrid({
                         </span>
                       </div>
                     ))}
-                    {day.events.length > 3 && (
-                      <div className="calendar-event-more">
-                        +{day.events.length - 3} more
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}

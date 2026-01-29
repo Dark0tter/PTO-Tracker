@@ -1,6 +1,7 @@
 import './App.css'
 import { useEffect, useMemo, useState } from 'react'
 import Dashboard from './components/Dashboard'
+import Login from './components/Login'
 import {
   calculateEmployeeStats,
   calculateDivisionStats,
@@ -11,10 +12,24 @@ import {
 import type { Employee, Division, TimeOffEvent, TimeOffType } from './types'
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:4000'
-const DEFAULT_TENANT = import.meta.env.VITE_TENANT_ID ?? 'acme'
+
+interface User {
+  id: string;
+  username: string;
+  tenantId: string;
+  role: string;
+}
 
 function App() {
-  const [tenantId, setTenantId] = useState(DEFAULT_TENANT)
+  const [authToken, setAuthToken] = useState<string | null>(() => {
+    return localStorage.getItem('authToken');
+  });
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const stored = localStorage.getItem('currentUser');
+    return stored ? JSON.parse(stored) : null;
+  });
+  const [tenantId, setTenantId] = useState('')
+  const [maxOverlap, setMaxOverlap] = useState(3)
   const [divisions, setDivisions] = useState<Division[]>([])
   const [employees, setEmployees] = useState<Employee[]>([])
   const [events, setEvents] = useState<TimeOffEvent[]>([])
@@ -27,6 +42,27 @@ function App() {
   const [error, setError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'calendar' | 'dashboard'>('calendar')
 
+  const handleLogin = (token: string, user: User) => {
+    setAuthToken(token);
+    setCurrentUser(user);
+    setTenantId(user.tenantId);
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('currentUser', JSON.stringify(user));
+  };
+
+  const handleLogout = () => {
+    setAuthToken(null);
+    setCurrentUser(null);
+    setTenantId('');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('currentUser');
+  };
+
+  // If not authenticated, show login
+  if (!authToken || !currentUser) {
+    return <Login onLogin={handleLogin} />;
+  }
+
   useEffect(() => {
     const controller = new AbortController()
     const load = async () => {
@@ -34,20 +70,26 @@ function App() {
       setError(null)
       try {
         const params = new URLSearchParams({
-          tenant: tenantId,
           from: new Date().getFullYear() + '-01-01',
           to: new Date().getFullYear() + '-12-31',
         })
 
+        const headers = {
+          'Authorization': `Bearer ${authToken}`,
+        };
+
         const [divRes, empRes, evRes] = await Promise.all([
           fetch(`${API_BASE}/divisions?${params.toString()}`, {
             signal: controller.signal,
+            headers,
           }),
           fetch(`${API_BASE}/employees?${params.toString()}`, {
             signal: controller.signal,
+            headers,
           }),
-          fetch(`${API_BASE}/timeoff?${params.toString()}`, {
+          fetch(`${API_BASE}/events?${params.toString()}`, {
             signal: controller.signal,
+            headers,
           }),
         ])
 
@@ -180,7 +222,7 @@ function App() {
       <header className="app-header">
         <div>
           <h1>Vacation Tracker</h1>
-          <p>Multi-tenant PTO calendar powered by Viewpoint (or other systems).</p>
+          <p>Multi-tenant PTO calendar - Logged in as <strong>{currentUser.username}</strong> ({currentUser.tenantId})</p>
         </div>
         <div className="header-controls">
           <div className="view-toggle">
@@ -198,6 +240,25 @@ function App() {
             </button>
           </div>
           <div className="tenant-input">
+            <label>
+              Max Overlap
+              <input
+                type="number"
+                min="1"
+                max="20"
+                value={maxOverlap}
+                onChange={(e) => setMaxOverlap(Number(e.target.value))}
+                style={{ width: '60px' }}
+                title="Maximum people allowed off on the same day before highlighting"
+              />
+            </label>
+          </div>
+          <div className="tenant-input">
+            <button onClick={handleLogout} className="logout-button" title="Sign out">
+              🚪 Logout
+            </button>
+          </div>
+          <div className="tenant-input" style={{ display: 'none' }}>
             <label>
               Tenant ID
               <input
