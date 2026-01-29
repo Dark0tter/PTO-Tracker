@@ -1,7 +1,6 @@
 import './App.css'
 import { useEffect, useMemo, useState } from 'react'
 import Dashboard from './components/Dashboard'
-import CalendarGrid from './components/CalendarGrid'
 import {
   calculateEmployeeStats,
   calculateDivisionStats,
@@ -26,9 +25,7 @@ function App() {
   const [dateTo, setDateTo] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'dashboard'>('list')
-  const [calendarYear, setCalendarYear] = useState(new Date().getFullYear())
-  const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth())
+  const [viewMode, setViewMode] = useState<'calendar' | 'dashboard'>('calendar')
 
   useEffect(() => {
     const controller = new AbortController()
@@ -186,22 +183,16 @@ function App() {
           <p>Multi-tenant PTO calendar powered by Viewpoint (or other systems).</p>
         </div>
         <div className="header-controls">
-          <div className="view-toggle">list' ? 'active' : ''}
-              onClick={() => setViewMode('list')}
-            >
-              📋 List
-            </button>
+          <div className="view-toggle">
             <button
-              className={viewMode === 'grid' ? 'active' : ''}
-              onClick={() => setViewMode('grid')}
+              className={viewMode === 'calendar' ? 'active' : ''}
+              onClick={() => setViewMode('calendar')}
             >
               📅 Calendar
             </button>
             <button
               className={viewMode === 'dashboard' ? 'active' : ''}
               onClick={() => setViewMode('dashboard')}
-            >
-              📊 Stats=> setViewMode('dashboard')}
             >
               📊 Dashboard
             </button>
@@ -228,24 +219,7 @@ function App() {
               employeeStats={employeeStats}
               divisionStats={divisionStats}
               busiestDays={busiestDays}
-          viewMode === 'grid' ? (
-        <div className="calendar-view">
-          {loading && <div className="status">Loading…</div>}
-          {error && <div className="status error">{error}</div>}
-          {!loading && !error && (
-            <CalendarGrid
-              year={calendarYear}
-              month={calendarMonth}
-              events={events}
-              employees={employees}
-              onMonthChange={(year, month) => {
-                setCalendarYear(year)
-                setCalendarMonth(month)
-              }}
-            />
-          )}
-        </div>
-      ) :     coverageGaps={coverageGaps}
+              coverageGaps={coverageGaps}
               typeBreakdown={typeBreakdown}
               totalEvents={events.length}
               dateFrom={dateFrom}
@@ -293,27 +267,10 @@ function App() {
                     e.target.value === 'all' ? 'all' : e.target.value,
                   )
                 }
-           div className="calendar-header">
-            <h2>
-              Time off – {new Date().getFullYear()}
-            </h2>
-            {activeFilterCount > 0 && (
-              <div className="active-filters">
-                {searchQuery && <span className="filter-tag">Search: "{searchQuery}"</span>}
-                {selectedDivision !== 'all' && (
-                  <span className="filter-tag">Division: {divisionName(selectedDivision)}</span>
-                )}
-                {selectedType !== 'all' && (
-                  <span className="filter-tag">Type: {selectedType}</span>
-                )}
-                {(dateFrom || dateTo) && (
-                  <span className="filter-tag">
-                    Date: {dateFrom || '...'} to {dateTo || '...'}
-                  </span>
-                )}
-              </div>
-            )}
-          </div    <option key={d.id} value={d.id}>
+              >
+                <option value="all">All divisions</option>
+                {divisions.map((d) => (
+                  <option key={d.id} value={d.id}>
                     {d.name}
                   </option>
                 ))}
@@ -382,27 +339,7 @@ function App() {
               ))
             ) : (
               <div className="empty-small">No employees match search</div>
-             }
-            >
-              <option value="all">All divisions</option>
-              {divisions.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <h3>Employees</h3>
-          <div className="employee-list">
-            {employees.map((e) => (
-              <div key={e.id} className="employee-row">
-                <div className="employee-name">{e.fullName}</div>
-                <div className="employee-division">
-                  {divisionName(e.divisionId)}
-                </div>
-              </div>
-            ))}
+            )}
           </div>
         </aside>
 
