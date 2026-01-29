@@ -6,6 +6,7 @@ export interface MockConnectorConfig {
   divisionCount?: number;
   eventCount?: number;
   seed?: number;
+  workWeekDays?: 5 | 7; // 5-day or 7-day work week
 }
 
 export class MockConnector implements TimeOffDataSource {
@@ -124,6 +125,7 @@ export class MockConnector implements TimeOffDataSource {
     const types: TimeOffType[] = ["VACATION", "SICK", "UNPAID", "OTHER"];
     const typeWeights = [0.65, 0.25, 0.05, 0.05]; // 65% vacation, 25% sick, etc.
     const currentYear = new Date().getFullYear();
+    const workWeekDays = this.config.workWeekDays ?? 5; // Default to 5-day work week
 
     // Helper to get next Monday from a date
     const getNextMonday = (date: Date): Date => {
@@ -134,15 +136,21 @@ export class MockConnector implements TimeOffDataSource {
       return d;
     };
 
-    // Helper to add weekdays only
-    const addWeekdays = (date: Date, days: number): Date => {
+    // Helper to add work days (respects 5 or 7 day weeks)
+    const addWorkDays = (date: Date, days: number): Date => {
       const result = new Date(date);
-      let added = 0;
-      while (added < days) {
-        result.setDate(result.getDate() + 1);
-        const dayOfWeek = result.getDay();
-        if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Not Sunday or Saturday
-          added++;
+      if (workWeekDays === 7) {
+        // 7-day work week: just add days
+        result.setDate(result.getDate() + days);
+      } else {
+        // 5-day work week: skip weekends
+        let added = 0;
+        while (added < days) {
+          result.setDate(result.getDate() + 1);
+          const dayOfWeek = result.getDay();
+          if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Not Sunday or Saturday
+            added++;
+          }
         }
       }
       return result;
@@ -167,27 +175,33 @@ export class MockConnector implements TimeOffDataSource {
       let endDate: Date;
 
       if (type === "VACATION") {
-        // Vacations typically start on Monday and are full weeks
+        // Vacations typically start on Monday (for 5-day) or any day (for 7-day)
         const randomMonth = Math.floor(Math.random() * 12);
         const randomDay = Math.floor(Math.random() * 28) + 1;
         const roughDate = new Date(currentYear, randomMonth, randomDay);
         
-        // Start on a Monday
-        startDate = getNextMonday(roughDate);
+        if (workWeekDays === 5) {
+          // 5-day: Start on a Monday
+          startDate = getNextMonday(roughDate);
+        } else {
+          // 7-day: Can start any day
+          startDate = roughDate;
+        }
         
-        // Vacation durations: mostly 1 week (5 days), sometimes 2 weeks (10 days), rarely 3 weeks (15 days)
+        // Vacation durations based on work week
+        // 1 week, 2 weeks, or 3 weeks
         const durationRoll = Math.random();
         let workDays: number;
         if (durationRoll < 0.6) {
-          workDays = 5; // 1 week - 60% of vacations
+          workDays = workWeekDays; // 1 week - 60% of vacations
         } else if (durationRoll < 0.9) {
-          workDays = 10; // 2 weeks - 30% of vacations
+          workDays = workWeekDays * 2; // 2 weeks - 30% of vacations
         } else {
-          workDays = 15; // 3 weeks - 10% of vacations
+          workDays = workWeekDays * 3; // 3 weeks - 10% of vacations
         }
         
-        // End date is start + workdays (excluding weekends)
-        endDate = addWeekdays(startDate, workDays - 1); // -1 because start day counts
+        // End date is start + workdays
+        endDate = addWorkDays(startDate, workDays - 1); // -1 because start day counts
         
       } else {
         // Sick days and other types are usually shorter and can start any day

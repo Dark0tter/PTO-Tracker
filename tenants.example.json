@@ -25,7 +25,8 @@
         "config": {
           "employeeCount": 25,
           "divisionCount": 5,
-          "eventCount": 50
+          "eventCount": 50,
+          "workWeekDays": 5
         }
       }
     },
@@ -37,7 +38,8 @@
         "config": {
           "employeeCount": 100,
           "divisionCount": 10,
-          "eventCount": 200
+          "eventCount": 200,
+          "workWeekDays": 7
         }
       }
     }
