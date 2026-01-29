@@ -255,7 +255,7 @@ function App() {
           </div>
           <div className="tenant-input">
             <button onClick={handleLogout} className="logout-button" title="Sign out">
-              🚪 Logout
+              Logout
             </button>
           </div>
           <div className="tenant-input" style={{ display: 'none' }}>
