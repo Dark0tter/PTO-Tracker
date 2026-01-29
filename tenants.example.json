@@ -1,0 +1,47 @@
+{
+  "tenants": [
+    {
+      "id": "acme",
+      "name": "ACME Construction",
+      "connector": {
+        "kind": "viewpointForProjects",
+        "config": {
+          "baseUrl": "https://your-viewpoint-domain",
+          "enterpriseId": "123",
+          "token": "REPLACE_WITH_API_TOKEN",
+          "divisionMode": "organisation",
+          "timeOffTaskFolderIds": ["taskfolder-id-1"],
+          "startDateFieldName": "StartDate",
+          "endDateFieldName": "EndDate",
+          "typeFieldName": "TimeOffType"
+        }
+      }
+    },
+    {
+      "id": "demo",
+      "name": "Demo Company (Mock Data)",
+      "connector": {
+        "kind": "mock",
+        "config": {
+          "employeeCount": 25,
+          "divisionCount": 5,
+          "eventCount": 50
+        }
+      }
+    },
+    {
+      "id": "testco",
+      "name": "Test Company (Large Mock)",
+      "connector": {
+        "kind": "mock",
+        "config": {
+          "employeeCount": 100,
+          "divisionCount": 10,
+          "eventCount": 200
+        }
+      }
+    }
+  ]
+}
+
+
