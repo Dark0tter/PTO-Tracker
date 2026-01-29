@@ -125,19 +125,32 @@ export class MockConnector implements TimeOffDataSource {
     const typeWeights = [0.65, 0.25, 0.05, 0.05]; // 65% vacation, 25% sick, etc.
     const currentYear = new Date().getFullYear();
 
+    // Helper to get next Monday from a date
+    const getNextMonday = (date: Date): Date => {
+      const d = new Date(date);
+      const day = d.getDay();
+      const daysUntilMonday = day === 0 ? 1 : (8 - day) % 7 || 7;
+      d.setDate(d.getDate() + daysUntilMonday);
+      return d;
+    };
+
+    // Helper to add weekdays only
+    const addWeekdays = (date: Date, days: number): Date => {
+      const result = new Date(date);
+      let added = 0;
+      while (added < days) {
+        result.setDate(result.getDate() + 1);
+        const dayOfWeek = result.getDay();
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Not Sunday or Saturday
+          added++;
+        }
+      }
+      return result;
+    };
+
     for (let i = 0; i < eventCount; i++) {
       const employee = this.employees[i % this.employees.length];
       
-      // Random date in current year
-      const startMonth = Math.floor(Math.random() * 12);
-      const startDay = Math.floor(Math.random() * 28) + 1;
-      const startDate = new Date(currentYear, startMonth, startDay);
-
-      // Duration between 1-10 days
-      const duration = Math.floor(Math.random() * 10) + 1;
-      const endDate = new Date(startDate);
-      endDate.setDate(endDate.getDate() + duration);
-
       // Weighted random type selection
       const rand = Math.random();
       let cumulativeWeight = 0;
@@ -148,6 +161,44 @@ export class MockConnector implements TimeOffDataSource {
           type = types[j];
           break;
         }
+      }
+
+      let startDate: Date;
+      let endDate: Date;
+
+      if (type === "VACATION") {
+        // Vacations typically start on Monday and are full weeks
+        const randomMonth = Math.floor(Math.random() * 12);
+        const randomDay = Math.floor(Math.random() * 28) + 1;
+        const roughDate = new Date(currentYear, randomMonth, randomDay);
+        
+        // Start on a Monday
+        startDate = getNextMonday(roughDate);
+        
+        // Vacation durations: mostly 1 week (5 days), sometimes 2 weeks (10 days), rarely 3 weeks (15 days)
+        const durationRoll = Math.random();
+        let workDays: number;
+        if (durationRoll < 0.6) {
+          workDays = 5; // 1 week - 60% of vacations
+        } else if (durationRoll < 0.9) {
+          workDays = 10; // 2 weeks - 30% of vacations
+        } else {
+          workDays = 15; // 3 weeks - 10% of vacations
+        }
+        
+        // End date is start + workdays (excluding weekends)
+        endDate = addWeekdays(startDate, workDays - 1); // -1 because start day counts
+        
+      } else {
+        // Sick days and other types are usually shorter and can start any day
+        const startMonth = Math.floor(Math.random() * 12);
+        const startDay = Math.floor(Math.random() * 28) + 1;
+        startDate = new Date(currentYear, startMonth, startDay);
+
+        // Sick/unpaid/other: 1-3 days typically
+        const duration = Math.floor(Math.random() * 3) + 1;
+        endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + duration);
       }
 
       this.events.push({
