@@ -1,6 +1,7 @@
 import './App.css'
 import { useEffect, useMemo, useState } from 'react'
 import Dashboard from './components/Dashboard'
+import CalendarGrid from './components/CalendarGrid'
 import {
   calculateEmployeeStats,
   calculateDivisionStats,
@@ -25,7 +26,9 @@ function App() {
   const [dateTo, setDateTo] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<'calendar' | 'dashboard'>('calendar')
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'dashboard'>('list')
+  const [calendarYear, setCalendarYear] = useState(new Date().getFullYear())
+  const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth())
 
   useEffect(() => {
     const controller = new AbortController()
@@ -183,16 +186,22 @@ function App() {
           <p>Multi-tenant PTO calendar powered by Viewpoint (or other systems).</p>
         </div>
         <div className="header-controls">
-          <div className="view-toggle">
+          <div className="view-toggle">list' ? 'active' : ''}
+              onClick={() => setViewMode('list')}
+            >
+              📋 List
+            </button>
             <button
-              className={viewMode === 'calendar' ? 'active' : ''}
-              onClick={() => setViewMode('calendar')}
+              className={viewMode === 'grid' ? 'active' : ''}
+              onClick={() => setViewMode('grid')}
             >
               📅 Calendar
             </button>
             <button
               className={viewMode === 'dashboard' ? 'active' : ''}
               onClick={() => setViewMode('dashboard')}
+            >
+              📊 Stats=> setViewMode('dashboard')}
             >
               📊 Dashboard
             </button>
@@ -219,7 +228,24 @@ function App() {
               employeeStats={employeeStats}
               divisionStats={divisionStats}
               busiestDays={busiestDays}
-              coverageGaps={coverageGaps}
+          viewMode === 'grid' ? (
+        <div className="calendar-view">
+          {loading && <div className="status">Loading…</div>}
+          {error && <div className="status error">{error}</div>}
+          {!loading && !error && (
+            <CalendarGrid
+              year={calendarYear}
+              month={calendarMonth}
+              events={events}
+              employees={employees}
+              onMonthChange={(year, month) => {
+                setCalendarYear(year)
+                setCalendarMonth(month)
+              }}
+            />
+          )}
+        </div>
+      ) :     coverageGaps={coverageGaps}
               typeBreakdown={typeBreakdown}
               totalEvents={events.length}
               dateFrom={dateFrom}
